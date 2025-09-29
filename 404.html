@@ -16,9 +16,16 @@
 
   <!-- Container hiển thị nhân sự -->
   <main id="employeeContainer" class="w-full max-w-lg"></main>
+  <div id="qrContainer" class="mt-6"></div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZqC77F8HHIkFN9cfoo1zE1P1ixfS1LD6-qC_8PjcLAVjy7qGjbx4m68wCt5int3Qq/exec";
+
+    // Check đăng nhập
+    if (localStorage.getItem("isAdmin") !== "true") {
+      alert("Bạn chưa đăng nhập!");
+      window.location.href = window.location.origin + "/employee-form/";
+    }
 
     function formatDate(value) {
       if (!value) return "";
@@ -43,6 +50,7 @@
       employees.forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         const profileUrl = `${window.location.origin + window.location.pathname.replace(/\/$/, '')}/${id}`;
+
         container.innerHTML = `
           <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center text-center">
             <img src="${avatar || "https://placehold.co/150x150"}" 
@@ -67,7 +75,6 @@
                 ⬅️ Quay lại danh sách
               </button>
             </div>
-            <div id="qrContainer" class="mt-4 hidden"></div>
           </div>
         `;
       });
@@ -75,13 +82,12 @@
 
     function showQR(url) {
       const qrDiv = document.getElementById("qrContainer");
-      qrDiv.innerHTML = "";
-      const qr = new QRCode(qrDiv, {
+      qrDiv.innerHTML = ""; // clear cũ
+      new QRCode(qrDiv, {
         text: url,
         width: 200,
         height: 200
       });
-      qrDiv.classList.remove("hidden");
     }
 
     function goBack() {
@@ -99,7 +105,7 @@
     }
 
     loadData();
-    setInterval(loadData, 1000);
+    setInterval(loadData, 5000); // reload mỗi 5 giây (không quá nhanh để giữ QR)
   </script>
 </body>
 </html>
