@@ -19,7 +19,6 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZqC77F8HHIkFN9cfoo1zE1P1ixfS1LD6-qC_8PjcLAVjy7qGjbx4m68wCt5int3Qq/exec";
 
-    // Hàm format ngày dd/mm/yyyy
     function formatDate(value) {
       if (!value) return "";
       const d = new Date(value);
@@ -27,31 +26,23 @@
       return d.toLocaleDateString("vi-VN");
     }
 
-    // Callback JSONP
     function renderSheet(data) {
       const container = document.getElementById("employeeContainer");
       container.innerHTML = "";
 
-      // Lấy ID từ URL
       const pathParts = window.location.pathname.split("/");
       const employeeId = pathParts[pathParts.length - 1];
 
-      // Bỏ dòng tiêu đề (row 0)
-      let employees = data.slice(1);
-
-      // Nếu có ID trong URL -> lọc đúng nhân sự
-      if (employeeId && employeeId !== "employee-form" && employeeId !== "") {
-        employees = employees.filter(emp => String(emp[0]) === employeeId);
-      }
+      let employees = data.slice(1).filter(emp => String(emp[0]) === employeeId);
 
       if (employees.length === 0) {
         container.innerHTML = `<p class="text-center text-gray-500">⚠️ Không tìm thấy nhân sự</p>`;
         return;
       }
 
-      // Render thông tin nhân sự
       employees.forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
+        const profileUrl = `${window.location.origin + window.location.pathname.replace(/\/$/, '')}/${id}`;
         container.innerHTML += `
           <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center text-center">
             <img src="${avatar || "https://placehold.co/150x150"}" 
@@ -59,19 +50,29 @@
                  class="w-32 h-32 object-cover rounded-full border-4 border-blue-600 shadow-md">
             <h2 class="text-2xl font-bold mt-4 text-gray-800">${name}</h2>
             <p class="text-gray-500 text-sm mb-4">ID: ${id}</p>
-            <div class="space-y-2 text-sm text-gray-700">
+            <div class="space-y-2 text-sm text-gray-700 text-left">
               <p><b>📅 Ngày sinh:</b> ${formatDate(dob)}</p>
               <p><b>📞 SĐT:</b> ${phone}</p>
               <p><b>🚀 Bắt đầu:</b> ${formatDate(start)}</p>
               <p><b>💼 Vị trí:</b> ${position}</p>
               <p><b>🏢 Phòng:</b> ${department}</p>
             </div>
+            <button onclick="showQR('${profileUrl}')" 
+                    class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+              📱 Tạo QR
+            </button>
+            <div id="qrContainer" class="mt-4 hidden"></div>
           </div>
         `;
       });
     }
 
-    // Hàm tải lại dữ liệu (JSONP)
+    function showQR(url) {
+      const qrDiv = document.getElementById("qrContainer");
+      qrDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(url)}" alt="QR Code">`;
+      qrDiv.classList.remove("hidden");
+    }
+
     function loadData() {
       const old = document.getElementById("jsonpScript");
       if (old) old.remove();
@@ -82,10 +83,7 @@
       document.body.appendChild(script);
     }
 
-    // Lần đầu load
     loadData();
-
-    // Lặp lại mỗi 1 giây để luôn cập nhật dữ liệu mới
     setInterval(loadData, 1000);
   </script>
 </body>

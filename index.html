@@ -15,7 +15,6 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZqC77F8HHIkFN9cfoo1zE1P1ixfS1LD6-qC_8PjcLAVjy7qGjbx4m68wCt5int3Qq/exec";
 
-    // Hàm format ngày
     function formatDate(value) {
       if (!value) return "";
       const d = new Date(value);
@@ -23,12 +22,10 @@
       return d.toLocaleDateString("vi-VN");
     }
 
-    // Callback JSONP
     function renderSheet(data) {
       const container = document.getElementById("employeeContainer");
       container.innerHTML = "";
 
-      // Bỏ dòng tiêu đề
       data.slice(1).forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         container.innerHTML += `
@@ -38,10 +35,8 @@
                  alt="${name}" 
                  class="w-32 h-32 object-cover rounded-full mx-auto border-4 border-blue-600">
             <h2 class="text-xl font-semibold text-center mt-2">${name}</h2>
-            <p class="text-gray-600 text-center text-sm">ID: ${id}</p>
-            <div class="mt-2 text-sm">
+            <div class="mt-2 text-sm text-gray-700 text-center">
               <p><b>Ngày sinh:</b> ${formatDate(dob)}</p>
-              <p><b>SĐT:</b> ${phone}</p>
               <p><b>Bắt đầu:</b> ${formatDate(start)}</p>
               <p><b>Vị trí:</b> ${position}</p>
               <p><b>Phòng:</b> ${department}</p>
@@ -51,7 +46,6 @@
       });
     }
 
-    // Load dữ liệu
     function loadData() {
       const old = document.getElementById("jsonpScript");
       if (old) old.remove();
@@ -62,7 +56,6 @@
       document.body.appendChild(script);
     }
 
-    // Mock login
     function checkLogin() {
       const user = prompt("Nhập username:");
       const pass = prompt("Nhập password:");
@@ -76,7 +69,6 @@
       }
     }
 
-    // Gọi login khi mở trang
     checkLogin();
   </script>
 </body>
