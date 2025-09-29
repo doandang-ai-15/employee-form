@@ -7,32 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6 relative">
-
-  <!-- Nút đăng xuất -->
-  <button onclick="logout()" class="absolute top-4 right-4 bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700">
-    🚪 Đăng xuất
-  </button>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
 
   <!-- Card nhân sự -->
-  <div id="employeeCard" class="bg-white shadow-lg rounded-xl p-6 max-w-md w-full text-center">
-    <img src="mock_logo_congty.png" alt="Logo" class="w-20 mx-auto mb-4">
+  <div id="employeeCard" class="bg-white shadow-lg rounded-xl p-6 max-w-md w-full text-center flex flex-col items-center">
+    <img src="mock_logo_congty.png" alt="Logo" class="w-20 mb-4">
     <div id="employeeInfo"></div>
     
     <!-- QR code -->
     <div id="qrcode" class="mt-4 flex justify-center"></div>
     
     <!-- Buttons -->
-    <div class="flex flex-col gap-3 mt-6">
+    <div class="flex flex-col sm:flex-row gap-3 mt-6 w-full justify-center">
       <button id="btnShowQR" onclick="generateQR()" 
-              class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 flex-1 sm:flex-none">
         📱 Xuất QR
       </button>
-      <button id="btnDownloadQR" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 hidden">
+      <button id="btnDownloadQR" 
+              class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 hidden flex-1 sm:flex-none">
         ⬇️ Tải QR về
       </button>
       <button onclick="goBack()" 
-              class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700">
+              class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 flex-1 sm:flex-none">
         ⬅️ Quay lại danh sách
       </button>
     </div>
@@ -42,12 +38,6 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZqC77F8HHIkFN9cfoo1zE1P1ixfS1LD6-qC_8PjcLAVjy7qGjbx4m68wCt5int3Qq/exec";
     let currentId = null;
     let currentQRCanvas = null;
-
-    // Check đăng nhập
-    if (localStorage.getItem("isAdmin") !== "true") {
-      alert("Bạn chưa đăng nhập!");
-      window.location.href = window.location.origin + "/employee-form/";
-    }
 
     function formatDate(value) {
       if (!value) return "";
@@ -72,10 +62,10 @@
       document.getElementById("employeeInfo").innerHTML = `
         <img src="${avatar || "https://placehold.co/150x150"}" 
              alt="${name}" 
-             class="w-32 h-32 object-cover rounded-full mx-auto border-4 border-blue-600">
+             class="w-32 h-32 object-cover rounded-full border-4 border-blue-600 mx-auto">
         <h2 class="text-xl font-semibold mt-2">${name}</h2>
         <p class="text-gray-600 text-sm mb-4">ID: ${id}</p>
-        <div class="space-y-1 text-sm text-left mt-2">
+        <div class="space-y-2 text-sm text-center w-full">
           <p><b>📅 Ngày sinh:</b> ${formatDate(dob)}</p>
           <p><b>📞 SĐT:</b> ${phone}</p>
           <p><b>🚀 Bắt đầu:</b> ${formatDate(start)}</p>
@@ -111,11 +101,6 @@
     }
 
     function goBack() {
-      window.location.href = window.location.origin + "/employee-form/";
-    }
-
-    function logout() {
-      localStorage.removeItem("isAdmin");
       window.location.href = window.location.origin + "/employee-form/";
     }
 
