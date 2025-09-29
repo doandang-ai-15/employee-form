@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Quản lý nhân sự</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div id="accessDenied" class="hidden text-red-600 font-bold text-lg"></div>
+
+  <div id="adminContent" class="hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Quản lý thông tin nhân sự</h1>
+      <button onclick="logout()" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Đăng xuất</button>
+    </div>
+
+    <form id="adminForm" class="bg-white shadow rounded p-6 max-w-2xl space-y-4">
+      <div>
+        <label class="block text-gray-700">ID</label>
+        <input id="id" type="text" value="01" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Họ Tên</label>
+        <input id="name" type="text" value="Trần Thành Long" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Ngày sinh</label>
+        <input id="dob" type="date" value="2002-12-03" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">SĐT</label>
+        <input id="phone" type="tel" value="0349323938" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Ngày bắt đầu công việc</label>
+        <input id="start" type="month" value="2025-09" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Vị trí</label>
+        <input id="position" type="text" value="Nhân viên thiết kế" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Phòng</label>
+        <input id="department" type="text" value="Kỹ thuật (CTO)" class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Avatar (png/jpg)</label>
+        <input id="avatar" type="file" accept=".png,.jpg,.jpeg" class="w-full">
+      </div>
+
+      <button type="button" onclick="saveData()" class="bg-blue-600 text-white px-4 py-2 rounded">Lưu thông tin</button>
+    </form>
+  </div>
+
+  <script>
+    // Kiểm tra quyền
+    if(localStorage.getItem("isAdmin") === "true"){
+      document.getElementById("adminContent").classList.remove("hidden");
+    } else {
+      document.getElementById("accessDenied").classList.remove("hidden");
+      document.getElementById("accessDenied").innerText = "Bạn chưa đủ quyền truy cập";
+    }
+
+    // Lưu thông tin
+    function saveData() {
+      const data = {
+        id: document.getElementById("id").value,
+        name: document.getElementById("name").value,
+        dob: document.getElementById("dob").value,
+        phone: document.getElementById("phone").value,
+        start: document.getElementById("start").value,
+        position: document.getElementById("position").value,
+        department: document.getElementById("department").value
+      };
+      alert("Dữ liệu đã lưu: " + JSON.stringify(data, null, 2));
+    }
+
+    // Đăng xuất
+    function logout(){
+      localStorage.removeItem("isAdmin");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
