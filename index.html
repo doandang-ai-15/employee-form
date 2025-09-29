@@ -6,65 +6,59 @@
   <title>Thông tin nhân sự</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 flex justify-center items-center min-h-screen relative">
-  <!-- Nút Admin góc phải -->
-  <div class="absolute top-4 right-4">
-    <a href="login.html" 
-       class="text-sm bg-blue-600 text-white px-3 py-1 rounded shadow hover:bg-blue-700 transition">
-       Admin
-    </a>
+<body class="bg-gray-50 min-h-screen p-6">
+  <div class="container mx-auto">
+    <h1 class="text-2xl font-bold text-center mb-6">Thông tin nhân sự</h1>
+    <div id="employeeContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </div>
 
-  <div class="bg-white shadow-xl rounded-lg w-full max-w-lg p-6">
-    <!-- Logo công ty -->
-    <div class="flex justify-center mb-6">
-      <img src="./assets/mock_logo_congty.png" alt="Logo công ty" class="h-16">
-    </div>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwCaAsfoBAW0rg0zR4yzAu7Zg59P8Q5prNV6GYmncj4ek71ueuygpvm3CU66CRrFc2J/exec"; // thay bằng URL Apps Script
 
-    <!-- Avatar -->
-    <div class="flex justify-center mb-4">
-      <img src="./assets/mock_avatar.png" 
-           alt="Avatar" 
-           class="w-32 h-32 object-cover rounded-full border-4 border-blue-800 shadow-lg">
-    </div>
+    async function loadEmployees() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
 
-    <!-- Form hiển thị -->
-    <form class="space-y-4">
-      <div>
-        <label class="block text-gray-600">ID</label>
-        <input type="text" value="01" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
+      try {
+        const res = await fetch(API_URL + "?action=read");
+        const data = await res.json();
 
-      <div>
-        <label class="block text-gray-600">Họ Tên</label>
-        <input type="text" value="Trần Thành Long" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
+        let employees = data;
+        if (id) {
+          employees = employees.filter(e => e[0] === id); // cột ID ở index 0
+        }
 
-      <div>
-        <label class="block text-gray-600">Ngày sinh</label>
-        <input type="text" value="03/12/2002" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
+        renderEmployees(employees);
+      } catch (err) {
+        document.getElementById("employeeContainer").innerHTML =
+          `<p class="text-red-600">Lỗi khi tải dữ liệu: ${err}</p>`;
+      }
+    }
 
-      <div>
-        <label class="block text-gray-600">Số điện thoại</label>
-        <input type="text" value="0349323938" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
+    function renderEmployees(employees) {
+      const container = document.getElementById("employeeContainer");
+      container.innerHTML = "";
 
-      <div>
-        <label class="block text-gray-600">Ngày bắt đầu công việc</label>
-        <input type="text" value="09/2025" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
+      employees.forEach(emp => {
+        const [id, name, dob, phone, start, position, department, avatar] = emp;
+        container.innerHTML += `
+          <div class="bg-white shadow rounded-lg p-4">
+            <img src="${avatar}" alt="${name}" class="w-32 h-32 object-cover rounded-full mx-auto border-4 border-blue-600">
+            <h2 class="text-xl font-semibold text-center mt-2">${name}</h2>
+            <p class="text-gray-600 text-center text-sm">ID: ${id}</p>
+            <div class="mt-2 text-sm">
+              <p><b>Ngày sinh:</b> ${dob}</p>
+              <p><b>SĐT:</b> ${phone}</p>
+              <p><b>Bắt đầu:</b> ${start}</p>
+              <p><b>Vị trí:</b> ${position}</p>
+              <p><b>Phòng:</b> ${department}</p>
+            </div>
+          </div>
+        `;
+      });
+    }
 
-      <div>
-        <label class="block text-gray-600">Vị trí</label>
-        <input type="text" value="Nhân viên thiết kế" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
-
-      <div>
-        <label class="block text-gray-600">Phòng</label>
-        <input type="text" value="Kỹ thuật (CTO)" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
-      </div>
-    </form>
-  </div>
+    loadEmployees();
+  </script>
 </body>
 </html>

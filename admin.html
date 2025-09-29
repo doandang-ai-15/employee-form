@@ -7,87 +7,123 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-6">
-  <div id="accessDenied" class="hidden text-red-600 font-bold text-lg"></div>
+  <h1 class="text-2xl font-bold mb-6">Admin - Quản lý nhân sự</h1>
 
-  <div id="adminContent" class="hidden">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Quản lý thông tin nhân sự</h1>
-      <button onclick="logout()" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Đăng xuất</button>
+  <form id="adminForm" class="bg-white shadow rounded p-6 max-w-2xl space-y-4">
+    <div>
+      <label class="block text-gray-700">ID (tự sinh, không sửa)</label>
+      <input id="id" type="text" readonly class="w-full border rounded px-3 py-2 bg-gray-100">
     </div>
 
-    <form id="adminForm" class="bg-white shadow rounded p-6 max-w-2xl space-y-4">
-      <div>
-        <label class="block text-gray-700">ID</label>
-        <input id="id" type="text" value="01" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">Họ Tên</label>
+      <input id="name" type="text" class="w-full border rounded px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">Họ Tên</label>
-        <input id="name" type="text" value="Trần Thành Long" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">Ngày sinh</label>
+      <input id="dob" type="date" class="w-full border rounded px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">Ngày sinh</label>
-        <input id="dob" type="date" value="2002-12-03" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">SĐT</label>
+      <input id="phone" type="tel" class="w-full border rounded px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">SĐT</label>
-        <input id="phone" type="tel" value="0349323938" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">Ngày bắt đầu công việc</label>
+      <input id="start" type="month" class="w-full border rounded px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">Ngày bắt đầu công việc</label>
-        <input id="start" type="month" value="2025-09" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">Vị trí</label>
+      <input id="position" type="text" class="w-full border rounded px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">Vị trí</label>
-        <input id="position" type="text" value="Nhân viên thiết kế" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">Phòng</label>
+      <input id="department" type="text" class="w-full border rounded px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">Phòng</label>
-        <input id="department" type="text" value="Kỹ thuật (CTO)" class="w-full border rounded px-3 py-2">
-      </div>
+    <div>
+      <label class="block text-gray-700">Avatar (png/jpg)</label>
+      <input id="avatar" type="file" accept=".png,.jpg,.jpeg" class="w-full">
+    </div>
 
-      <div>
-        <label class="block text-gray-700">Avatar (png/jpg)</label>
-        <input id="avatar" type="file" accept=".png,.jpg,.jpeg" class="w-full">
-      </div>
+    <button type="button" onclick="saveData()" class="bg-blue-600 text-white px-4 py-2 rounded">Lưu thông tin</button>
+  </form>
 
-      <button type="button" onclick="saveData()" class="bg-blue-600 text-white px-4 py-2 rounded">Lưu thông tin</button>
-    </form>
-  </div>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-  <script>
-    // Kiểm tra quyền
-    if(localStorage.getItem("isAdmin") === "true"){
-      document.getElementById("adminContent").classList.remove("hidden");
-    } else {
-      document.getElementById("accessDenied").classList.remove("hidden");
-      document.getElementById("accessDenied").innerText = "Bạn chưa đủ quyền truy cập";
+    // Firebase config của bạn
+    const firebaseConfig = {
+      apiKey: "AIzaSyB2b3QAaU_y7ySL33iS_9ZPNFiw6SMs1N0",
+      authDomain: "employee-form-f4b62.firebaseapp.com",
+      projectId: "employee-form-f4b62",
+      storageBucket: "employee-form-f4b62.appspot.com",
+      messagingSenderId: "677305770905",
+      appId: "1:677305770905:web:97905dab1b317092fb2908",
+      measurementId: "G-R2TK1SRR62"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwCaAsfoBAW0rg0zR4yzAu7Zg59P8Q5prNV6GYmncj4ek71ueuygpvm3CU66CRrFc2J/exec"; // thay bằng link Apps Script của bạn
+
+    function generateId() {
+      return Math.floor(100000000 + Math.random() * 900000000).toString();
     }
 
-    // Lưu thông tin
-    function saveData() {
+    async function uploadToFirebase(file) {
+      const fileName = "avatars/avatar-" + Date.now() + "-" + file.name;
+      const storageRef = ref(storage, fileName);
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    }
+
+    window.saveData = async function() {
+      const fileInput = document.getElementById("avatar");
+      let avatarUrl = "";
+
+      if (fileInput.files.length > 0) {
+        try {
+          avatarUrl = await uploadToFirebase(fileInput.files[0]);
+        } catch (err) {
+          alert("Lỗi upload Firebase: " + err.message);
+          return;
+        }
+      }
+
       const data = {
-        id: document.getElementById("id").value,
+        id: document.getElementById("id").value || generateId(),
         name: document.getElementById("name").value,
         dob: document.getElementById("dob").value,
         phone: document.getElementById("phone").value,
         start: document.getElementById("start").value,
         position: document.getElementById("position").value,
-        department: document.getElementById("department").value
+        department: document.getElementById("department").value,
+        avatar: avatarUrl
       };
-      alert("Dữ liệu đã lưu: " + JSON.stringify(data, null, 2));
-    }
 
-    // Đăng xuất
-    function logout(){
-      localStorage.removeItem("isAdmin");
-      window.location.href = "index.html";
-    }
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+        const text = await res.text();
+        alert("Server response: " + text);
+      } catch (err) {
+        alert("Lỗi khi lưu: " + err);
+      }
+    };
+
+    // Auto-generate ID khi vào form
+    document.getElementById("id").value = generateId();
   </script>
 </body>
 </html>
