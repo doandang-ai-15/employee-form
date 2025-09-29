@@ -5,30 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thông tin nhân sự</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <!-- Nút đăng xuất -->
+  <button onclick="logout()" class="absolute top-4 right-4 bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700">
+    🚪 Đăng xuất
+  </button>
 
-  <!-- Header -->
-  <header class="w-full max-w-4xl flex justify-between items-center mb-8">
-    <img src="mock_logo_congty.png" alt="Company Logo" class="h-16 md:h-20">
-    <button onclick="logout()" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700">
-      🚪 Đăng xuất
+  <div id="employeeCard" class="bg-white shadow-lg rounded-lg p-6 max-w-md w-full text-center">
+    <img src="mock_logo_congty.png" alt="Logo" class="w-20 mx-auto mb-4">
+    <div id="employeeInfo"></div>
+    <div id="qrcode" class="mt-4 flex justify-center"></div>
+    <button id="downloadQR" class="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 hidden">
+      ⬇️ Tải QR về
     </button>
-  </header>
-
-  <!-- Container hiển thị nhân sự -->
-  <main id="employeeContainer" class="w-full max-w-lg"></main>
-  <div id="qrContainer" class="mt-6"></div>
+    <button onclick="window.location.href='./'" 
+            class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+      ⬅️ Quay lại danh sách
+    </button>
+  </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZqC77F8HHIkFN9cfoo1zE1P1ixfS1LD6-qC_8PjcLAVjy7qGjbx4m68wCt5int3Qq/exec";
-
-    // Check đăng nhập
-    if (localStorage.getItem("isAdmin") !== "true") {
-      alert("Bạn chưa đăng nhập!");
-      window.location.href = window.location.origin + "/employee-form/";
-    }
 
     function formatDate(value) {
       if (!value) return "";
@@ -38,68 +37,46 @@
     }
 
     function renderSheet(data) {
-      const container = document.getElementById("employeeContainer");
-      container.innerHTML = "";
+      const idFromUrl = window.location.pathname.split("/").pop();
+      const emp = data.slice(1).find(row => String(row[0]) === idFromUrl);
 
-      const pathParts = window.location.pathname.split("/");
-      const employeeId = pathParts[pathParts.length - 1];
-      let employees = data.slice(1).filter(emp => String(emp[0]) === employeeId);
-
-      if (employees.length === 0) {
-        container.innerHTML = `<p class="text-center text-gray-500">⚠️ Không tìm thấy nhân sự</p>`;
+      if (!emp) {
+        document.getElementById("employeeInfo").innerHTML =
+          `<p class="text-red-600">❌ Không tìm thấy nhân sự với ID: ${idFromUrl}</p>`;
         return;
       }
 
-      employees.forEach(emp => {
-        const [id, name, dob, phone, start, position, department, avatar] = emp;
-        const profileUrl = `${window.location.origin}/employee-form/${id}`;
+      const [id, name, dob, phone, start, position, department, avatar] = emp;
+      document.getElementById("employeeInfo").innerHTML = `
+        <img src="${avatar || "https://placehold.co/150x150"}" 
+             alt="${name}" 
+             class="w-32 h-32 object-cover rounded-full mx-auto border-4 border-blue-600">
+        <h2 class="text-xl font-semibold mt-2">${name}</h2>
+        <p class="text-gray-600 text-sm">ID: ${id}</p>
+        <div class="mt-2 text-sm text-left">
+          <p><b>Ngày sinh:</b> ${formatDate(dob)}</p>
+          <p><b>SĐT:</b> ${phone}</p>
+          <p><b>Bắt đầu:</b> ${formatDate(start)}</p>
+          <p><b>Vị trí:</b> ${position}</p>
+          <p><b>Phòng:</b> ${department}</p>
+        </div>
+      `;
 
-        container.innerHTML = `
-          <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center text-center">
-            <img src="${avatar || "https://placehold.co/150x150"}" 
-                 alt="${name}" 
-                 class="w-32 h-32 object-cover rounded-full border-4 border-blue-600 shadow-md">
-            <h2 class="text-2xl font-bold mt-4 text-gray-800">${name}</h2>
-            <p class="text-gray-500 text-sm mb-4">ID: ${id}</p>
-            <div class="space-y-2 text-sm text-gray-700 text-left">
-              <p><b>📅 Ngày sinh:</b> ${formatDate(dob)}</p>
-              <p><b>📞 SĐT:</b> ${phone}</p>
-              <p><b>🚀 Bắt đầu:</b> ${formatDate(start)}</p>
-              <p><b>💼 Vị trí:</b> ${position}</p>
-              <p><b>🏢 Phòng:</b> ${department}</p>
-            </div>
-            <div class="flex gap-4 mt-6">
-              <button onclick="showQR('${profileUrl}')" 
-                      class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
-                📱 Tạo QR
-              </button>
-              <button onclick="goBack()" 
-                      class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700">
-                ⬅️ Quay lại danh sách
-              </button>
-            </div>
-          </div>
-        `;
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = "";
+      const url = `${window.location.origin}/employee-form/${id}`;
+      QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
+        if (!err) {
+          qrContainer.appendChild(canvas);
+          document.getElementById("downloadQR").classList.remove("hidden");
+          document.getElementById("downloadQR").onclick = () => {
+            const link = document.createElement("a");
+            link.download = `QR_${id}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+          };
+        }
       });
-    }
-
-    function showQR(url) {
-      const qrDiv = document.getElementById("qrContainer");
-      qrDiv.innerHTML = ""; 
-      new QRCode(qrDiv, {
-        text: url,
-        width: 200,
-        height: 200
-      });
-    }
-
-    function goBack() {
-      window.location.href = window.location.origin + "/employee-form/";
-    }
-
-    function logout() {
-      localStorage.removeItem("isAdmin");
-      window.location.href = window.location.origin + "/employee-form/";
     }
 
     function loadData() {
@@ -112,8 +89,12 @@
       document.body.appendChild(script);
     }
 
+    function logout() {
+      localStorage.removeItem("isAdmin");
+      window.location.href = window.location.origin + "/employee-form/";
+    }
+
     loadData();
-    setInterval(loadData, 5000);
   </script>
 </body>
 </html>
