@@ -17,11 +17,22 @@
 
     // Callback JSONP
     function renderSheet(data) {
+      console.log("✅ Callback renderSheet được gọi");
+      console.log("📥 Dữ liệu nhận về từ Google Sheet:", data);
+
       const container = document.getElementById("employeeContainer");
       container.innerHTML = "";
 
+      // Nếu sheet rỗng hoặc chỉ có header
+      if (!data || data.length <= 1) {
+        console.warn("⚠️ Không có dữ liệu nhân sự trong sheet");
+        container.innerHTML = `<p class="text-gray-600">Chưa có dữ liệu nhân sự</p>`;
+        return;
+      }
+
       // Bỏ dòng tiêu đề (row 0)
-      data.slice(1).forEach(emp => {
+      data.slice(1).forEach((emp, idx) => {
+        console.log(`🔹 Render nhân sự #${idx + 1}:`, emp);
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         container.innerHTML += `
           <div class="bg-white shadow rounded-lg p-4 hover:shadow-lg transition">
@@ -44,14 +55,21 @@
 
     // Hàm tải lại dữ liệu (bằng JSONP)
     function loadData() {
+      console.log("⏳ Gọi loadData() để lấy dữ liệu mới...");
+
       // Xóa script cũ để tránh gọi lặp callback
       const old = document.getElementById("jsonpScript");
-      if (old) old.remove();
+      if (old) {
+        console.log("🗑️ Xóa script cũ");
+        old.remove();
+      }
 
       const script = document.createElement("script");
       script.id = "jsonpScript";
       script.src = SCRIPT_URL + "?callback=renderSheet&_ts=" + Date.now(); // _ts để tránh cache
       document.body.appendChild(script);
+
+      console.log("📡 Đã thêm script tag:", script.src);
     }
 
     // Lần đầu load
