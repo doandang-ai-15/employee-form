@@ -6,7 +6,7 @@
   <title>Danh sách nhân sự</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen p-6">
+<body class="bg-gray-50 min-h-screen p-6 hidden" id="mainBody">
   <div class="container mx-auto">
     <h1 class="text-2xl font-bold text-center mb-6">Danh sách nhân sự</h1>
     <div id="employeeContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -15,7 +15,7 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZqC77F8HHIkFN9cfoo1zE1P1ixfS1LD6-qC_8PjcLAVjy7qGjbx4m68wCt5int3Qq/exec";
 
-    // Format ngày sang dd/mm/yyyy
+    // Hàm format ngày
     function formatDate(value) {
       if (!value) return "";
       const d = new Date(value);
@@ -25,39 +25,21 @@
 
     // Callback JSONP
     function renderSheet(data) {
-      console.log("✅ Callback renderSheet được gọi");
-      console.log("📥 Dữ liệu nhận về từ Google Sheet:", data);
-
       const container = document.getElementById("employeeContainer");
       container.innerHTML = "";
 
-      // Lấy ID từ URL
-      const pathParts = window.location.pathname.split("/");
-      const employeeId = pathParts[pathParts.length - 1];
-      console.log("🔎 ID trên URL:", employeeId);
-
-      // Bỏ dòng tiêu đề (row 0)
-      let employees = data.slice(1);
-
-      if (employeeId && employeeId !== "employee-form" && employeeId !== "") {
-        employees = employees.filter(emp => String(emp[0]) === employeeId);
-      }
-
-      if (employees.length === 0) {
-        container.innerHTML = `<p class="text-center text-gray-500">⚠️ Không tìm thấy nhân sự</p>`;
-        return;
-      }
-
-      employees.forEach(emp => {
+      // Bỏ dòng tiêu đề
+      data.slice(1).forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         container.innerHTML += `
-          <div class="bg-white shadow rounded-lg p-4 hover:shadow-lg transition text-center">
+          <div class="bg-white shadow rounded-lg p-4 hover:shadow-lg transition cursor-pointer"
+               onclick="window.location.href='${window.location.origin + window.location.pathname.replace(/\/$/, '')}/${id}'">
             <img src="${avatar || "https://placehold.co/150x150"}" 
                  alt="${name}" 
                  class="w-32 h-32 object-cover rounded-full mx-auto border-4 border-blue-600">
-            <h2 class="text-xl font-semibold mt-2">${name}</h2>
-            <p class="text-gray-600 text-sm">ID: ${id}</p>
-            <div class="mt-2 text-sm text-left inline-block">
+            <h2 class="text-xl font-semibold text-center mt-2">${name}</h2>
+            <p class="text-gray-600 text-center text-sm">ID: ${id}</p>
+            <div class="mt-2 text-sm">
               <p><b>Ngày sinh:</b> ${formatDate(dob)}</p>
               <p><b>SĐT:</b> ${phone}</p>
               <p><b>Bắt đầu:</b> ${formatDate(start)}</p>
@@ -69,27 +51,33 @@
       });
     }
 
-    // Hàm tải lại dữ liệu (JSONP)
+    // Load dữ liệu
     function loadData() {
-      console.log("⏳ Gọi loadData() để lấy dữ liệu mới...");
       const old = document.getElementById("jsonpScript");
-      if (old) {
-        console.log("🗑️ Xóa script cũ");
-        old.remove();
-      }
+      if (old) old.remove();
 
       const script = document.createElement("script");
       script.id = "jsonpScript";
       script.src = SCRIPT_URL + "?callback=renderSheet&_ts=" + Date.now();
       document.body.appendChild(script);
-      console.log("📡 Đã thêm script tag:", script.src);
     }
 
-    // Lần đầu load
-    loadData();
+    // Mock login
+    function checkLogin() {
+      const user = prompt("Nhập username:");
+      const pass = prompt("Nhập password:");
+      if (user === "admin" && pass === "admin") {
+        document.getElementById("mainBody").classList.remove("hidden");
+        loadData();
+        setInterval(loadData, 1000);
+      } else {
+        alert("Sai tài khoản hoặc mật khẩu!");
+        window.location.reload();
+      }
+    }
 
-    // Lặp lại mỗi 1 giây
-    setInterval(loadData, 1000);
+    // Gọi login khi mở trang
+    checkLogin();
   </script>
 </body>
 </html>
