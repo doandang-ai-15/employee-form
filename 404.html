@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thông tin nhân sự</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
 
@@ -32,7 +33,6 @@
 
       const pathParts = window.location.pathname.split("/");
       const employeeId = pathParts[pathParts.length - 1];
-
       let employees = data.slice(1).filter(emp => String(emp[0]) === employeeId);
 
       if (employees.length === 0) {
@@ -43,7 +43,7 @@
       employees.forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         const profileUrl = `${window.location.origin + window.location.pathname.replace(/\/$/, '')}/${id}`;
-        container.innerHTML += `
+        container.innerHTML = `
           <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center text-center">
             <img src="${avatar || "https://placehold.co/150x150"}" 
                  alt="${name}" 
@@ -57,10 +57,16 @@
               <p><b>💼 Vị trí:</b> ${position}</p>
               <p><b>🏢 Phòng:</b> ${department}</p>
             </div>
-            <button onclick="showQR('${profileUrl}')" 
-                    class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
-              📱 Tạo QR
-            </button>
+            <div class="flex gap-4 mt-6">
+              <button onclick="showQR('${profileUrl}')" 
+                      class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+                📱 Tạo QR
+              </button>
+              <button onclick="goBack()" 
+                      class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700">
+                ⬅️ Quay lại danh sách
+              </button>
+            </div>
             <div id="qrContainer" class="mt-4 hidden"></div>
           </div>
         `;
@@ -69,8 +75,17 @@
 
     function showQR(url) {
       const qrDiv = document.getElementById("qrContainer");
-      qrDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(url)}" alt="QR Code">`;
+      qrDiv.innerHTML = "";
+      const qr = new QRCode(qrDiv, {
+        text: url,
+        width: 200,
+        height: 200
+      });
       qrDiv.classList.remove("hidden");
+    }
+
+    function goBack() {
+      window.location.href = window.location.origin + "/employee-form/";
     }
 
     function loadData() {

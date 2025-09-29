@@ -57,9 +57,16 @@
     }
 
     function checkLogin() {
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("mainBody").classList.remove("hidden");
+        loadData();
+        setInterval(loadData, 1000);
+        return;
+      }
       const user = prompt("Nhập username:");
       const pass = prompt("Nhập password:");
       if (user === "admin" && pass === "admin") {
+        localStorage.setItem("isAdmin", "true");
         document.getElementById("mainBody").classList.remove("hidden");
         loadData();
         setInterval(loadData, 1000);
