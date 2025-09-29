@@ -53,53 +53,49 @@
     <button type="button" onclick="saveData()" class="bg-blue-600 text-white px-4 py-2 rounded">Lưu thông tin</button>
   </form>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-
-    // Firebase config của bạn
-    const firebaseConfig = {
-      apiKey: "AIzaSyB2b3QAaU_y7ySL33iS_9ZPNFiw6SMs1N0",
-      authDomain: "employee-form-f4b62.firebaseapp.com",
-      projectId: "employee-form-f4b62",
-      storageBucket: "employee-form-f4b62.appspot.com",
-      messagingSenderId: "677305770905",
-      appId: "1:677305770905:web:97905dab1b317092fb2908",
-      measurementId: "G-R2TK1SRR62"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const storage = getStorage(app);
-
-    const API_URL = "https://script.google.com/macros/s/AKfycbyHAcUF5QhjuKxGz2wEFeNFqFRP3qJiIoybyArDLsvkr5bdx8LFA6gIHe-3TMTUbbyg/exec"; // thay bằng link Apps Script của bạn
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyHAcUF5QhjuKxGz2wEFeNFqFRP3qJiIoybyArDLsvkr5bdx8LFA6gIHe-3TMTUbbyg/exec"; // thay bằng link Apps Script Web App
+    const CLOUD_NAME = "dy3e7nrkv";
+    const UPLOAD_PRESET = "employee_upload";
 
     function generateId() {
       return Math.floor(100000000 + Math.random() * 900000000).toString();
     }
 
-    async function uploadToFirebase(file) {
-      const fileName = "avatars/avatar-" + Date.now() + "-" + file.name;
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, file);
-      return await getDownloadURL(storageRef);
+    // Upload file lên Cloudinary
+    async function uploadToCloudinary(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", UPLOAD_PRESET);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData
+      });
+
+      const json = await res.json();
+      if (json.secure_url) {
+        return json.secure_url;
+      } else {
+        throw new Error("Upload thất bại: " + JSON.stringify(json));
+      }
     }
 
-    window.saveData = async function() {
+    // Lưu dữ liệu
+    async function saveData() {
       const fileInput = document.getElementById("avatar");
       let avatarUrl = "";
 
-     if (fileInput.files.length > 0) {
-  try {
-    console.log("⏳ Bắt đầu upload Firebase...");
-    avatarUrl = await uploadToFirebase(fileInput.files[0]);
-    console.log("✅ Upload thành công, URL:", avatarUrl);
-  } catch (err) {
-    console.error("❌ Lỗi upload Firebase:", err);
-    alert("Lỗi upload Firebase: " + err.message);
-    return;
-  }
-}
+      if (fileInput.files.length > 0) {
+        try {
+          console.log("⏳ Upload Cloudinary...");
+          avatarUrl = await uploadToCloudinary(fileInput.files[0]);
+          console.log("✅ Upload thành công:", avatarUrl);
+        } catch (err) {
+          alert("❌ Lỗi upload Cloudinary: " + err.message);
+          return;
+        }
+      }
 
       const data = {
         id: document.getElementById("id").value || generateId(),
@@ -112,6 +108,8 @@
         avatar: avatarUrl
       };
 
+      console.log("📤 Data gửi:", data);
+
       try {
         const res = await fetch(API_URL, {
           method: "POST",
@@ -119,13 +117,14 @@
           body: JSON.stringify(data)
         });
         const text = await res.text();
+        console.log("📥 Server trả về:", text);
         alert("Server response: " + text);
       } catch (err) {
-        alert("Lỗi khi lưu: " + err);
+        alert("❌ Lỗi khi lưu: " + err);
       }
-    };
+    }
 
-    // Auto-generate ID khi vào form
+    // Gán ID ngẫu nhiên khi load form
     document.getElementById("id").value = generateId();
   </script>
 </body>
