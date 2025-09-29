@@ -3,51 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thông tin nhân sự</title>
+  <title>Danh sách nhân sự</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-6">
   <div class="container mx-auto">
-    <h1 class="text-2xl font-bold text-center mb-6">Thông tin nhân sự</h1>
+    <h1 class="text-2xl font-bold text-center mb-6">Danh sách nhân sự</h1>
     <div id="employeeContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxR6eF0lcTzJmaC0dhItpPpHjtbHMJT12Y7nvos56alm5ia5vTp2m9vgZLmPAPGcbVo/exec"; // thay bằng link Apps Script Web App
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaxOw9nzBI1RMgaAyDtT34FeOGAvCfetm_4WgN2-3RXhM33x8PM5G_ZGG8edUD18OY/exec";
 
-    async function loadEmployees() {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get("id");
-
-      try {
-        console.log("📡 Gọi API:", API_URL + "?action=read");
-        const res = await fetch(API_URL + "?action=read");
-        const data = await res.json();
-
-        let employees = data;
-        if (id) {
-          employees = employees.filter(e => e[0] === id); // cột ID ở index 0
-        }
-
-        renderEmployees(employees);
-      } catch (err) {
-        document.getElementById("employeeContainer").innerHTML =
-          `<p class="text-red-600">❌ Lỗi khi tải dữ liệu: ${err}</p>`;
-        console.error("❌ API error:", err);
-      }
-    }
-
-    function renderEmployees(employees) {
+    // Callback JSONP
+    function renderSheet(data) {
       const container = document.getElementById("employeeContainer");
       container.innerHTML = "";
 
-      if (employees.length === 0) {
-        container.innerHTML = `<p class="text-gray-600">Không tìm thấy nhân viên nào.</p>`;
-        return;
-      }
-
-      employees.forEach(emp => {
-        // Cột dữ liệu theo thứ tự đã lưu vào sheet: id, name, dob, phone, start, position, department, avatar
+      // Bỏ dòng tiêu đề (row 0)
+      data.slice(1).forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         container.innerHTML += `
           <div class="bg-white shadow rounded-lg p-4 hover:shadow-lg transition">
@@ -68,7 +42,23 @@
       });
     }
 
-    loadEmployees();
+    // Hàm tải lại dữ liệu (bằng JSONP)
+    function loadData() {
+      // Xóa script cũ để tránh gọi lặp callback
+      const old = document.getElementById("jsonpScript");
+      if (old) old.remove();
+
+      const script = document.createElement("script");
+      script.id = "jsonpScript";
+      script.src = SCRIPT_URL + "?callback=renderSheet&_ts=" + Date.now(); // _ts để tránh cache
+      document.body.appendChild(script);
+    }
+
+    // Lần đầu load
+    loadData();
+
+    // Lặp lại mỗi 1 giây
+    setInterval(loadData, 1000);
   </script>
 </body>
 </html>
