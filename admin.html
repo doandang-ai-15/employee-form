@@ -89,14 +89,17 @@
       const fileInput = document.getElementById("avatar");
       let avatarUrl = "";
 
-      if (fileInput.files.length > 0) {
-        try {
-          avatarUrl = await uploadToFirebase(fileInput.files[0]);
-        } catch (err) {
-          alert("Lỗi upload Firebase: " + err.message);
-          return;
-        }
-      }
+     if (fileInput.files.length > 0) {
+  try {
+    console.log("⏳ Bắt đầu upload Firebase...");
+    avatarUrl = await uploadToFirebase(fileInput.files[0]);
+    console.log("✅ Upload thành công, URL:", avatarUrl);
+  } catch (err) {
+    console.error("❌ Lỗi upload Firebase:", err);
+    alert("Lỗi upload Firebase: " + err.message);
+    return;
+  }
+}
 
       const data = {
         id: document.getElementById("id").value || generateId(),
