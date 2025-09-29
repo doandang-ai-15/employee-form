@@ -8,7 +8,15 @@
 </head>
 <body class="bg-gray-50 min-h-screen p-6 hidden" id="mainBody">
   <div class="container mx-auto">
-    <h1 class="text-2xl font-bold text-center mb-6">Danh sách nhân sự</h1>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-center">Danh sách nhân sự</h1>
+      <button onclick="logout()" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700">
+        🚪 Đăng xuất
+      </button>
+    </div>
+
+    <!-- Grid hiển thị nhân sự -->
     <div id="employeeContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </div>
 
@@ -30,7 +38,7 @@
         const [id, name, dob, phone, start, position, department, avatar] = emp;
         container.innerHTML += `
           <div class="bg-white shadow rounded-lg p-4 hover:shadow-lg transition cursor-pointer"
-               onclick="window.location.href='${window.location.origin + window.location.pathname.replace(/\/$/, '')}/${id}'">
+               onclick="window.location.href='${window.location.origin}/employee-form/${id}'">
             <img src="${avatar || "https://placehold.co/150x150"}" 
                  alt="${name}" 
                  class="w-32 h-32 object-cover rounded-full mx-auto border-4 border-blue-600">
@@ -60,7 +68,7 @@
       if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("mainBody").classList.remove("hidden");
         loadData();
-        setInterval(loadData, 1000);
+        setInterval(loadData, 5000);
         return;
       }
       const user = prompt("Nhập username:");
@@ -69,11 +77,16 @@
         localStorage.setItem("isAdmin", "true");
         document.getElementById("mainBody").classList.remove("hidden");
         loadData();
-        setInterval(loadData, 1000);
+        setInterval(loadData, 5000);
       } else {
         alert("Sai tài khoản hoặc mật khẩu!");
         window.location.reload();
       }
+    }
+
+    function logout() {
+      localStorage.removeItem("isAdmin");
+      window.location.href = window.location.origin + "/employee-form/";
     }
 
     checkLogin();

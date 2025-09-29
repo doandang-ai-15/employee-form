@@ -10,8 +10,11 @@
 <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
 
   <!-- Header -->
-  <header class="w-full max-w-4xl flex justify-center items-center mb-8">
+  <header class="w-full max-w-4xl flex justify-between items-center mb-8">
     <img src="mock_logo_congty.png" alt="Company Logo" class="h-16 md:h-20">
+    <button onclick="logout()" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700">
+      🚪 Đăng xuất
+    </button>
   </header>
 
   <!-- Container hiển thị nhân sự -->
@@ -49,7 +52,7 @@
 
       employees.forEach(emp => {
         const [id, name, dob, phone, start, position, department, avatar] = emp;
-        const profileUrl = `${window.location.origin + window.location.pathname.replace(/\/$/, '')}/${id}`;
+        const profileUrl = `${window.location.origin}/employee-form/${id}`;
 
         container.innerHTML = `
           <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center text-center">
@@ -82,7 +85,7 @@
 
     function showQR(url) {
       const qrDiv = document.getElementById("qrContainer");
-      qrDiv.innerHTML = ""; // clear cũ
+      qrDiv.innerHTML = ""; 
       new QRCode(qrDiv, {
         text: url,
         width: 200,
@@ -91,6 +94,11 @@
     }
 
     function goBack() {
+      window.location.href = window.location.origin + "/employee-form/";
+    }
+
+    function logout() {
+      localStorage.removeItem("isAdmin");
       window.location.href = window.location.origin + "/employee-form/";
     }
 
@@ -105,7 +113,7 @@
     }
 
     loadData();
-    setInterval(loadData, 5000); // reload mỗi 5 giây (không quá nhanh để giữ QR)
+    setInterval(loadData, 5000);
   </script>
 </body>
 </html>
